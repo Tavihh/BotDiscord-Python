@@ -152,8 +152,8 @@ class Interacao(commands.Cog):
                 
                 # Pegamos os IDs do .env e convertemos para int com segurança
                 try:
-                    criador_id = int(os.getenv('DONO', 0))
-                    guild_dono_id = int(os.getenv('GUILD_DONO', 0))
+                    criador_id = int(os.getenv('DONO'))
+                    guild_dono_id = int(os.getenv('GUILD_DONO'))
                 except (ValueError, TypeError):
                     criador_id, guild_dono_id = 0, 0
 
@@ -174,7 +174,7 @@ class Interacao(commands.Cog):
                 contexto_chat = "\n".join(mensagens)
 
                 # 5. Montagem do Prompt Blindado
-                diretriz = os.getenv('BOT_PERSONALITY')"
+                diretriz = os.getenv('BOT_PERSONALITY')
                 
                 prompt = (
                     f"DIRETRIZES DE PERSONALIDADE: {diretriz}\n\n"
