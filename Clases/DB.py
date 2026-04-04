@@ -36,6 +36,18 @@ def iniciar_banco():
     )
     ''')
 
+    # 4. Tabela de Convites (Invite Tracker)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS convites (
+        user_id TEXT PRIMARY KEY,
+        invite_code TEXT UNIQUE,
+        usos_atuais INTEGER DEFAULT 0,
+        meta_batida INTEGER DEFAULT 0
+    )
+    ''')
+
+    conn.commit()
+
     conn.commit()
     conn.close()
     print("✅ Banco de dados pronto para o combate!")

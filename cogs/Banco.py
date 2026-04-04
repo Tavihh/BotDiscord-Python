@@ -3,8 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 from random import choice, randint
 import datetime
-from Clases.Banco import Banco
-from Clases.Server import ServerConfig
+from Clases.BancoConfig import BancoConfig
+from Clases.ServerConfig import ServerConfig
 from Clases.Loja import LojaView
 
 import os
@@ -34,7 +34,7 @@ class Bank(commands.Cog):
             await interaction.response.send_message('Isso é um Bot',ephemeral=True,delete_after=10)
             return
 
-        user = Banco(self.bot, quem)
+        user = BancoConfig(self.bot, quem)
         try:
             #Cria o Embed e Envia
             embed = discord.Embed(title=f"{BOT.title()} Bank", color=0x00ff00)
@@ -48,7 +48,7 @@ class Bank(commands.Cog):
             await interaction.response.send_message(embed=embed,delete_after=30)
         except:
             user.abrir_conta()
-            user = Banco(self.bot, quem.id)
+            user = BancoConfig(self.bot, quem.id)
             #Cria o Embed e Envia
             embed = discord.Embed(title=f"{BOT.title()} Bank", color=0x00ff00)
             embed.add_field(name="Usuario",value=f"{quem.mention}", inline=False)
@@ -79,8 +79,8 @@ class Bank(commands.Cog):
         if valor <= 0:
             return await interaction.response.send_message('Valor inválido.', ephemeral=True)
 
-        user = Banco(self.bot, interaction.user)
-        alvo = Banco(self.bot, quem) # Passando o objeto QUEM
+        user = BancoConfig(self.bot, interaction.user)
+        alvo = BancoConfig(self.bot, quem) # Passando o objeto QUEM
 
         if user.saldo_banco < valor:
             return await interaction.response.send_message('Você não tem saldo no banco para essa transferência.', ephemeral=True)
@@ -105,7 +105,7 @@ class Bank(commands.Cog):
         if quantia <= 0:
             return await interaction.response.send_message('Não é possível depositar valores negativos ou zero.', ephemeral=True)
 
-        user = Banco(self.bot, interaction.user) # Passando o objeto USER
+        user = BancoConfig(self.bot, interaction.user) # Passando o objeto USER
 
         # Se o saldo for 0 (usuário novo), tentamos abrir a conta automaticamente
         if user.saldo_user == 0 and quantia > 0:
@@ -130,7 +130,7 @@ class Bank(commands.Cog):
         if quantia <= 0:
             return await interaction.response.send_message('Valor de saque inválido.', ephemeral=True)
 
-        user = Banco(self.bot, interaction.user)
+        user = BancoConfig(self.bot, interaction.user)
 
         if quantia > user.saldo_banco:
             await interaction.response.send_message(f'Sacando todos os {user.saldo_banco} disponíveis.', ephemeral=True)
@@ -160,7 +160,7 @@ class Bank(commands.Cog):
         #Escolhendo a profissão e executando o programa
         profissao =['garcom','prefeito','mineiro','entregador','presidente','lixeiro','chefe de cozinha','Chapeleiro','Policial','Traficante','Segurança','Motorista de Onibus','Piloto de avião','Navegante de Barcos','Cantor']
         salario = randint(1,300)+300
-        user = Banco(self.bot, interaction.user)
+        user = BancoConfig(self.bot, interaction.user)
         try:
             #Verificando se já trabalhou hoje
             if user.dia_trabalhado == f'{dia}/{mes}':
@@ -178,7 +178,7 @@ class Bank(commands.Cog):
             user.trabalhou()
         except:
             user.abrir_conta()
-            user = Banco(self.bot, interaction.user.id)
+            user = BancoConfig(self.bot, interaction.user.id)
             #Verificando se já trabalhou hoje
             if user.dia_trabalhado == f'{dia}/{mes}':
                 await interaction.response.send_message('você ja trabalhou hoje, Volte amanhã!',delete_after=15)
@@ -215,8 +215,8 @@ class Bank(commands.Cog):
             await interaction.response.send_message(f'Hey {interaction.user.mention} você não pode roubar a si mesmo🤨',delete_after=10)
             return
 
-        user = Banco(self.bot, interaction.user)
-        alvo = Banco(self.bot, quem)
+        user = BancoConfig(self.bot, interaction.user)
+        alvo = BancoConfig(self.bot, quem)
         if alvo.saldo_user < 25:
             #Cria o Embed e Envia
             embed = discord.Embed(title=f"{BOT.title()} Bank", color=0x00ff00)
@@ -244,7 +244,7 @@ class Bank(commands.Cog):
             await interaction.response.send_message('Você está na minha Ignore List, não posso te responder aqui',delete_after=10)
             return
         try:
-            user = Banco(self.bot, interaction.user)
+            user = BancoConfig(self.bot, interaction.user)
             #Verificando se tem Saldo Suficiente
             if user.saldo_user < 1000:
                 #Cria o Embed e Envia
@@ -282,7 +282,7 @@ class Bank(commands.Cog):
                     return
         except:
             user.abrir_conta()
-            user = Banco(self.bot, interaction.user.id)
+            user = BancoConfig(self.bot, interaction.user.id)
             #Verificando se tem Saldo Suficiente
             if user.saldo_user < 1000:
                 await interaction.response.send_message(f'{BOT}s Insuficientes. são Necessarios 1000 {BOT}s, Saque seus Oopas',delete_after=10)
@@ -301,7 +301,7 @@ class Bank(commands.Cog):
             return await interaction.response.send_message('To Off', delete_after=20)
 
         # 1. Pega a lista já filtrada e ordenada (Top 10 ou Top 6 como você preferir)
-        lista_membros = Banco(self.bot, interaction.user).membros_saldo(interaction.guild)
+        lista_membros = BancoConfig(self.bot, interaction.user).membros_saldo(interaction.guild)
         if not lista_membros:
             return await interaction.response.send_message("Ninguém neste servidor tem conta no banco ainda!", ephemeral=True)
         embed = discord.Embed(title=f"🏆 Rank Local - {BOT.title()} Bank", color=0x00ff00)
@@ -331,7 +331,7 @@ class Bank(commands.Cog):
         embed.add_field(name="🍀 Poção da Sorte (500)", value="Aumenta chances no cassino.", inline=False)
         embed.add_field(name="💰 3x+ Salário (500)", value="Triplica o próximo /trabalhar.", inline=False)
         
-        view = LojaView(self.bot, interaction.user, Banco)
+        view = LojaView(self.bot, interaction.user, BancoConfig)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 

@@ -5,7 +5,7 @@ import asyncio
 import google.generativeai as genai
 import os
 from yt_dlp import YoutubeDL
-from Clases.Server import ServerConfig
+from Clases.ServerConfig import ServerConfig
 
 # Configura a API (Pegue sua chave em: https://aistudio.google.com/)
 genai.configure(api_key=os.getenv("GEMINI_KEY"))

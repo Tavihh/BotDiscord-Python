@@ -10,7 +10,7 @@ mydb.row_factory = sqlite3.Row
 mycursor = mydb.cursor()
 
 # Dica: Mantenha a conexão dentro da classe ou passe como argumento para evitar locks
-class Banco:
+class BancoConfig:
     def __init__(self, bot, user):
         self.bot = bot
         self.user = user

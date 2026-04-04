@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from random import randint, choice
-from Clases.Server import ServerConfig
+from Clases.ServerConfig import ServerConfig
 import os
 
 BOT_NAME = os.getenv('BOT', 'Oopa').lower()

@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from Clases.Server import ServerConfig
+from Clases.ServerConfig import ServerConfig
 import os
 from dotenv import load_dotenv
 load_dotenv()

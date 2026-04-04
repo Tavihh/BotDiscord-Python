@@ -4,7 +4,7 @@ from discord.ext import commands
 import google.generativeai as genai
 from random import randint, choice
 from yt_dlp import YoutubeDL
-from Clases.Server import ServerConfig
+from Clases.ServerConfig import ServerConfig
 
 import os
 from dotenv import load_dotenv
