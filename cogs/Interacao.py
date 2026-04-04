@@ -23,7 +23,6 @@ RESPOSTAS_ESTATICAS = {
     ('alguém on', 'alguem on', 'algm on', 'alguém vivo', 'alguem vivo', 'tem alguem', 'vivo?') : ['so você e deus amigo', 'acho que ta todo mundo off', 'devem estar ocupados', 'tenta outra hora', 'Tenta gritar "PIX GRÁTIS" que aparece alguém.' ],
     ('fodase', 'foda-se', 'fds', 'foda se') : ['Desfoda-se'],
     ("duvi"): [ "Meu pau no seu ouvido.", "Duvidou? No meu pirulito você rodou."],
-    ("que","quê"): ["Queijo!"],
     "mario" : ["Aquele que te pegou atrás do armário?", "Conheço, é primo daquele que te comeu no vestiário."],
     "cinco" : ["Meu pau no seu brinco."],
     "seis" : ["Meu pau que te fez."],
