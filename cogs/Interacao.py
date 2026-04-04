@@ -100,7 +100,6 @@ class Interacao(commands.Cog):
                         with open('midia/explosao.gif', 'rb') as f:
                             await message.channel.send(file=discord.File(f))
                     await message.channel.send('⚠️ **ERRO NO SISTEMA!** A arma explodiu na minha mão! 💥🔥')
-            
             return
 
         membro = [m.display_name[:4].lower() for m in message.guild.members if not m.bot]
@@ -108,49 +107,32 @@ class Interacao(commands.Cog):
             respostas = [
                 'Esse é o mais sigma do server 🗿🍷',
                 'Ihh, esse aí? É o capitão do time do arco-íris 🌈',
-                'Gente fina, mas se ficar sozinho com a sua conta, ela some 💸',
-                'Esse nunca foi preso atoa... sempre teve um motivo muito bom 🚔',
                 'Esse é turista: aparece, solta uma pérola e some por 3 meses ✈️',
-                'Esse daí gosta de dar o bumbum, mas diz que é "experimental" 🍑',
-                'Não sei o que aparece primeiro: a volta de Jesus ou esse cara no chat ☁️',
-                'Lenda viva! Ou melhor, lenda, porque vivo ele quase não tá 💀',
-                'Diz a lenda que se você olhar pro espelho e falar o nome dele 3 vezes, sua carteira some 🕵️',
-                'O shape dele é de dar inveja... em um Grilo 🦗',
                 'Se inteligência fosse dinheiro, ele estaria devendo pro banco do Bot 📉',
-                'É o braço direito do ADM, mas o ADM não sabe disso ainda 🤡',
-                'Entrou no servidor só pra pegar o link de outros e nunca mais falar nada 🚶',
-                'Esse é o tipo de cara que pede PIX de 1 real pra inteirar o corote 🍺',
-                'O maior inimigo do ban... por enquanto 🔨',
-                'Gente boa, mas se a polícia bater na porta, ele pula a janela 👮',
                 'A última vez que ele trabalhou no /banco-trabalhar, o servidor caiu de susto 👷',
                 'Se beleza fosse crime, ele seria a pessoa mais honesta do mundo 🙊',
-                'O verdadeiro significado de "tanto faz": se sair do servidor, ninguém percebe 🤐',
-                'Dizem que ele é o criador do bot, mas a única coisa que ele criou foi dívida 🧠',
-                'O mais sigma do server 🗿🍷',
-                'Capitão do time do arco-íris 🌈',
+                'Esse é o mais sigma do server 🗿🍷',
+                'Esse é o Capitão do time do arco-íris 🌈',
                 'Gente boa, mas deve pro banco 💸',
-                'Preso? Sempre por um bom motivo 🚔',
                 'Aparece a cada eclipse 🌑',
-                'Gosta de dar o bumbum em off 🍑',
+                'Esse gosta de dar o bumbum em off 🍑',
                 'Jesus volta antes desse cara ☁️',
                 'Lenda viva (mais pra lenda) 💀',
                 'Carteira some perto dele 🕵️',
-                'Shape de grilo 🦗',
-                'QI de temperatura de geladeira 📉',
+                'Esse é o shape de grilo 🦗',
                 'Puxa-saco oficial do ADM 🤡',
-                'Turista profissional 🚶',
-                'Pede PIX de 1 real pro corote 🍺',
+                'Esse é Turista profissional 🚶',
+                'Esse Pede PIX de 1 real pro corote 🍺',
                 'Inimigo n° 1 do Ban 🔨',
-                'Pula a janela se a polícia bater 👮',
-                'Trabalhar no bot? Ele tem alergia 👷',
-                'Bonito? Só de longe e no escuro 🙊',
+                'Esse pula a janela se a polícia bater 👮',
                 'Se sair, ninguém percebe 🤐',
                 'Só cria dívida no server 🧠'
             ]
             #Simula que está digitando
             async with message.channel.typing():
                 await asyncio.sleep( 1.5 )
-            await message.channel.send(choice(respostas))
+                await message.channel.send(choice(respostas))
+            return
 
         # --- INTERAÇÃO COM NOME DO BOT (IA ou Gatilhos) ---
         if self.bn in texto or self.bot.user.mentioned_in(message):
@@ -161,56 +143,60 @@ class Interacao(commands.Cog):
             await self.handle_video_download(message)
 
     async def handle_ia_or_triggers(self, message, texto):
+        # 1. Garantir que o typing() feche corretamente
         async with message.channel.typing():
-            # 1. Identificação e Relação
-            user_id = message.author.id
-            guild_id = message.guild.id
-            criador_id = os.getenv('DONO')
-            guild_dono = os.getenv('GUILD_DONO')    
-            relacao = "seu criador" if user_id == criador_id else "membro comum"
-            relacao_guilda = 'Seu Servidor' if guild_id == guild_dono else 'Servidor comum que você apenas é um bot'
-
-            # 2. Prompt Zeca Urubu
-            # Pegamos o conteúdo da mensagem removendo o nome do bot para a IA focar na pergunta
-            pergunta_limpa = texto.replace(self.bn, "").replace(f'<@{self.bot.user.id}>', "").strip()
-            if not pergunta_limpa:
-                pergunta_limpa = "me deu oi ou apenas me chamou"
-            
-            # 1. Busca as últimas 10 mensagens (incluindo a que acabou de ser enviada)
-            mensagens = []
-            async for msg in message.channel.history(limit=20):
-                # Formatamos como "Nome: Mensagem" para a IA entender o contexto
-                mensagens.append(f"{msg.author.display_name}: {msg.content}")
-
-            # 2. O Discord entrega da mais NOVA para a mais ANTIGA. 
-            # Para a IA entender a conversa, precisamos inverter a ordem.
-            mensagens.reverse()
-
-            # 3. Junta tudo em um bloco de texto (Contexto)
-            contexto_chat = "\n".join(mensagens)
-
-            prompt = (
-                f"Diretrizes de Personalidade: {os.getenv('BOT_PERSONALITY')}\n\n"
-                f"Atualmente, você está falando com um membro, que é {relacao}.\n\n"
-                f"Atualmente, você está no Servidor: {message.guild.name}, que é {relacao_guilda}.\n\n"
-                f"Contexto: {contexto_chat}\n\n"
-                f"Interação do {message.author.id}: {pergunta_limpa}"
-            )
-
-
-
             try:
-                # 3. Gera a resposta e envia
-                response = model.generate_content(prompt)
-                # Adicionamos um pequeno delay para simular o tempo de leitura do corvo
-                await message.channel.send(response.text)
-                return
+                # 2. Identificação (Convertendo para INT para a lógica funcionar)
+                user_id = message.author.id
+                guild_id = message.guild.id
                 
+                # Pegamos os IDs do .env e convertemos para int com segurança
+                try:
+                    criador_id = int(os.getenv('DONO', 0))
+                    guild_dono_id = int(os.getenv('GUILD_DONO', 0))
+                except (ValueError, TypeError):
+                    criador_id, guild_dono_id = 0, 0
+
+                relacao = "seu criador (Otávio/Tavihh)" if user_id == criador_id else "um membro comum"
+                relacao_guilda = 'Seu Servidor Principal' if guild_id == guild_dono_id else 'um servidor comum'
+
+                # 3. Limpeza da Pergunta
+                pergunta_limpa = texto.replace(self.bn, "").replace(f'<@{self.bot.user.id}>', "").strip()
+                if not pergunta_limpa:
+                    pergunta_limpa = "me deu oi ou apenas me chamou"
+
+                # 4. Histórico (Contexto)
+                mensagens = []
+                async for msg in message.channel.history(limit=15): # 15 mensagens é um bom equilíbrio
+                    mensagens.append(f"{msg.author.display_name}: {msg.content}")
+                
+                mensagens.reverse()
+                contexto_chat = "\n".join(mensagens)
+
+                # 5. Montagem do Prompt Blindado
+                diretriz = os.getenv('BOT_PERSONALITY') or "Você é um bot sarcástico e pragmático."
+                
+                prompt = (
+                    f"DIRETRIZES DE PERSONALIDADE: {diretriz}\n\n"
+                    f"SITUAÇÃO: Você está falando com {relacao} no {relacao_guilda}.\n"
+                    f"HISTÓRICO RECENTE:\n{contexto_chat}\n\n"
+                    f"A ÚLTIMA MENSAGEM DO USUÁRIO FOI: {pergunta_limpa}\n"
+                    f"RESPONDA AGORA (curto e direto):"
+                )
+
+                # 6. Geração com Timeout (Evita travar o 'digitando')
+                # O loop 'async with typing' fecha automaticamente quando sair deste bloco
+                response = model.generate_content(prompt)
+                
+                if response and response.text:
+                    await message.channel.send(response.text)
+                else:
+                    await message.channel.send("Fiquei sem palavras agora... tenta de novo.")
+
             except Exception as e:
-                await asyncio.sleep(1)
-                await message.channel.send(f'To cansado de conversar, Pra ver meus comandos, use /')
-                print(f"❌ ERRO NO GEMINI (on_message): {e}")
-                return 
+                print(f"❌ ERRO NO GEMINI: {e}")
+                # Resposta de fallback para não deixar o usuário no vácuo
+                await message.channel.send("Tô com preguiça de pensar, me pergunta mais tarde ou usa os comandos com /")
 
     async def handle_video_download(self, message):
         video_link = message.content

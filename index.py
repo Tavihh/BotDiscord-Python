@@ -28,7 +28,7 @@ class MyBot(commands.Bot):
                     print(f'✅ Sucesso ao carregar: {filename}')
                 except Exception as e:
                     print(f'❌ Erro ao carregar {filename}: {e}')
-        # await self.tree.sync()
+        await self.tree.sync()
         total_comandos = len(self.tree.get_commands())
         iniciar_banco()
         print(f"{total_comandos} Comandos sincronizados para {self.user}")

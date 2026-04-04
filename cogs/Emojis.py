@@ -43,10 +43,13 @@ class Emoji(commands.Cog):
         for gatilhos, emojis in self.MAPA_REACOES.items():
             if self.deve_reagir(gatilhos, texto): 
                 emoji_escolhido = choice(emojis)
-                await message.add_reaction(emoji_escolhido)
-                return # Para no primeiro gatilho encontrado
+                try:
+                    await message.add_reaction(emoji_escolhido)
+                except discord.Forbidden:
+                    print(f"⚠️ Sem permissão para reagir no canal {message.channel.name}")
+                except discord.HTTPException as e:
+                    print(f"❌ Erro ao reagir: {e}")
   
-
 
         # Reação Especial (Quando citam o nome dele)
         if BOT_NAME in texto:
