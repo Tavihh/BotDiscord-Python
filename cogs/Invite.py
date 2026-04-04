@@ -47,46 +47,44 @@ class Invite(commands.Cog):
                 dados = inv_db.buscar_dono_do_convite(inv_disc.code)
                 
                 if dados and inv_disc.uses > dados['usos_atuais']:
+                    # 1. Atualiza banco e identifica os envolvidos
                     res = inv_db.adicionar_uso(inv_disc.code)
                     user_id_dono = int(res['user_id'])
                     total_usos = res['usos_atuais']
-                    
                     dono = member.guild.get_member(user_id_dono)
-                    
-                    # --- NOVIDADE: AVISO PARA O DONO DO CONVITE ---
+
+                    # 2. Aviso silencioso na DM do dono (Feedback de progresso)
                     if dono:
                         try:
-                            # Formatação 01/05, 02/05, etc.
                             progresso = f"{total_usos:02d}/{self.meta_convites:02d}"
-                            await dono.send(
-                                f"✅ **Um novo recruta chegou!**\n"
-                                f"O usuário {member.name} entrou pelo seu convite.\n"
-                                f"📊 Seu progresso atual: **{progresso}**"
-                            )
-                        except:
-                            # Se a DM do dono estiver fechada, o bot não crasha
-                            pass
+                            await dono.send(f"✅ **+1 Recruta!** {member.name} entrou pelo seu link. Progresso: **{progresso}**")
+                        except: pass
 
-                    # 2. MANDA AS BOAS-VINDAS NO CHAT
-                    canal_id = os.getenv('CANAL_BOAS_VINDAS')
-                    canal_boas_vindas = member.guild.get_channel(int(canal_id)) if canal_id else member.guild.system_channel
-                    
-                    if canal_boas_vindas and dono:
-                        await canal_boas_vindas.send(
-                            f"👋 {member.mention} acabou de chegar! "
-                        )
-
-                    # 3. VERIFICA A META
+                    # 3. VERIFICA A META (O grande anúncio público)
                     if total_usos >= self.meta_convites and res['meta_batida'] == 0:
                         cargo = member.guild.get_role(self.cargo_membro_id)
+                        
                         if cargo and dono:
                             try:
                                 await dono.add_roles(cargo)
                                 inv_db.set_meta_batida(user_id_dono)
-                                await dono.send(f"🎖️ **MISSÃO CUMPRIDA!** Você atingiu a meta de {total_usos} convites e ganhou o cargo **{cargo.name}**!")
-                            except: pass
+                                
+                                # DM de comemoração
+                                await dono.send(f"🎖️ **MISSÃO CUMPRIDA!** Você atingiu a meta e agora é um **{cargo.name}**!")
+
+                                # ANÚNCIO PÚBLICO (Apenas para quem completou a meta)
+                                canal_id = os.getenv('CANAL_BOAS_VINDAS')
+                                canal_boas_vindas = member.guild.get_channel(int(canal_id)) if canal_id else member.guild.system_channel
+                                
+                                if canal_boas_vindas:
+                                    await canal_boas_vindas.send(
+                                        f"🎊 **NOVO MEMBRO OFICIAL!** 🎊\n"
+                                        f"Parabéns {dono.mention}! Você recrutou 5 combatentes e agora possui o cargo **{cargo.name}**! 🫡"
+                                    )
+                            except Exception as e:
+                                print(f"Erro ao premiar membro: {e}")
                     
-                    break 
+                    break # Encontrou o convite, encerra o loop
         except Exception as e:
             print(f"Erro ao rastrear convite: {e}")
 
