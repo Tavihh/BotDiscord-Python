@@ -157,7 +157,7 @@ class Interacao(commands.Cog):
                 except (ValueError, TypeError):
                     criador_id, guild_dono_id = 0, 0
 
-                relacao = "seu criador (Otávio/Tavihh)" if user_id == criador_id else "um membro comum"
+                relacao = "seu criador" if user_id == criador_id else "um membro comum"
                 relacao_guilda = 'Seu Servidor Principal' if guild_id == guild_dono_id else 'um servidor comum'
 
                 # 3. Limpeza da Pergunta
@@ -174,7 +174,7 @@ class Interacao(commands.Cog):
                 contexto_chat = "\n".join(mensagens)
 
                 # 5. Montagem do Prompt Blindado
-                diretriz = os.getenv('BOT_PERSONALITY') or "Você é um bot sarcástico e pragmático."
+                diretriz = os.getenv('BOT_PERSONALITY')"
                 
                 prompt = (
                     f"DIRETRIZES DE PERSONALIDADE: {diretriz}\n\n"
