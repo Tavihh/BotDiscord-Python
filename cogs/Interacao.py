@@ -35,7 +35,8 @@ RESPOSTAS_ESTATICAS = {
 class Interacao(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bn = os.getenv('BOT', 'Oopa').lower()
+        self.bn = os.getenv('BOT').lower()
+        self.conversa_ativa = {}
 
     # 1. Função de Sorteio (Membro da Classe)
     def sorteio(self, chance=3):
@@ -44,7 +45,7 @@ class Interacao(commands.Cog):
     # 2. O Decorador Correto para Cogs
     @commands.Cog.listener()
     async def on_message(self, message):
-        # Filtros Iniciais
+        # 1. Filtros Iniciais de Segurança
         if message.author.bot or not message.guild:
             return
 
@@ -53,16 +54,61 @@ class Interacao(commands.Cog):
             return
 
         texto = message.content.lower()
-        
-        # --- LÓGICA DE RESPOSTAS RÁPIDAS (Dicionário) ---
-        for gatilho, resposta in RESPOSTAS_ESTATICAS.items():
-            if texto.startswith(gatilho):
-                async with message.channel.typing():
-                    await asyncio.sleep(1.5)
-                    final_msg = choice(resposta) if isinstance(resposta, list) else resposta
-                    await message.channel.send(final_msg)
+        canal_id = message.channel.id
+        user_id = message.author.id
+        membro = [m.display_name[:4].lower() for m in message.guild.members if not m.bot]
+
+        # 2. VERIFICAÇÃO: O bot foi chamado explicitamente?
+        chamou_bot = self.bn in texto or self.bot.user.mentioned_in(message)
+
+        # 3. LÓGICA DE MEMÓRIA (ENTRADA):
+        if chamou_bot:
+            # Marca que este usuário está em conversa ativa neste canal
+            self.conversa_ativa[canal_id] = {
+                "user": user_id, 
+                "tempo": asyncio.get_event_loop().time()
+            }
+            await self.handle_ia_or_triggers(message, texto)
+            return
+
+        # 4. O "PULO DO GATO": Contexto de conversa ativa (sem marcação)
+        if canal_id in self.conversa_ativa:
+            dados = self.conversa_ativa[canal_id]
+            tempo_passado = asyncio.get_event_loop().time() - dados["tempo"]
+
+            # Se for o mesmo usuário e a conversa ainda está "quente" (< 45 segundos)
+            if dados["user"] == user_id and tempo_passado < 45:
+                
+                # --- VERIFICAÇÃO DE SAÍDA (O usuário mudou de assunto?) ---
+                
+                # A) Verificação por Menção (@Alguém)
+                marcou_outro = message.mentions and not self.bot.user.mentioned_in(message)
+                
+                # B) Verificação por Iniciais (Ex: "tavi...", "sans...")
+                # Só roda se não houver menção, para poupar processamento
+                citou_nome_outro = False
+                if not marcou_outro:
+                    inicio_msg = texto[:4].strip()
+                    # any() é mais rápido: para na primeira coincidência encontrada
+                    citou_nome_outro = any(
+                        m.display_name[:4].lower() == inicio_msg 
+                        for m in message.guild.members 
+                        if not m.bot and m.id != self.bot.user.id
+                    )
+
+                # Se ele chamou outra pessoa, o bot sai de fininho
+                if marcou_outro or citou_nome_outro:
+                    print(f"DEBUG: {message.author.name} mudou o foco. Saindo da conversa ativa.")
+                    del self.conversa_ativa[canal_id]
+                    return
+
+                # --- CONTINUAÇÃO DA CONVERSA ---
+                print(f"DEBUG: {message.author.name} segue falando comigo (Contexto Ativo).")
+                # Reseta o timer para a conversa não expirar agora
+                self.conversa_ativa[canal_id]["tempo"] = asyncio.get_event_loop().time()
+                await self.handle_ia_or_triggers(message, texto)
                 return
-        
+    
         gatilhos_mata = (f'{self.bn} mate a', f'{self.bn} mate o', f'{self.bn} mata o', f'{self.bn} mata a', f'{self.bn} executa')
         if any(g in texto for g in gatilhos_mata):
             # Pega o último nome da frase de forma segura
@@ -102,6 +148,41 @@ class Interacao(commands.Cog):
                     await message.channel.send('⚠️ **ERRO NO SISTEMA!** A arma explodiu na minha mão! 💥🔥')
             return
 
+        if texto[:4] in membro:
+            respostas = [
+                'Esse é o mais sigma do server 🗿🍷',
+                'Ihh, esse aí? É o capitão do time do arco-íris 🌈',
+                'Esse é turista: aparece, solta uma pérola e some por 3 meses ✈️',
+                'Se inteligência fosse dinheiro, ele estaria devendo pro banco do Bot 📉',
+                'A última vez que ele trabalhou no /banco-trabalhar, o servidor caiu de susto 👷',
+                'Se beleza fosse crime, ele seria a pessoa mais honesta do mundo 🙊',
+                'Esse é o mais sigma do server 🗿🍷',
+                'Esse é o Capitão do time do arco-íris 🌈',
+                'Gente boa, mas deve pro banco 💸',
+                'Aparece a cada eclipse 🌑',
+                'Esse gosta de dar o bumbum em off 🍑',
+                'Jesus volta antes desse cara ☁️',
+                'Lenda viva (mais pra lenda) 💀',
+                'Carteira some perto dele 🕵️',
+                'Esse é o shape de grilo 🦗',
+                'Puxa-saco oficial do ADM 🤡',
+                'Esse é Turista profissional 🚶',
+                'Esse Pede PIX de 1 real pro corote 🍺',
+                'Inimigo n° 1 do Ban 🔨',
+                'Esse pula a janela se a polícia bater 👮',
+                'Se sair, ninguém percebe 🤐',
+                'Só cria dívida no server 🧠'
+            ]
+            #Simula que está digitando
+            async with message.channel.typing():
+                await asyncio.sleep( 1.5 )
+                await message.channel.send(choice(respostas))
+            return
+
+        # --- DOWNLOADER DE VÍDEO (Separado para organização) ---
+        if texto.startswith('https://'):
+            await self.handle_video_download(message)
+        
         membro = [m.display_name[:4].lower() for m in message.guild.members if not m.bot]
         if texto[:4] in membro:
             respostas = [
@@ -134,13 +215,14 @@ class Interacao(commands.Cog):
                 await message.channel.send(choice(respostas))
             return
 
-        # --- INTERAÇÃO COM NOME DO BOT (IA ou Gatilhos) ---
-        if self.bn in texto or self.bot.user.mentioned_in(message):
-            await self.handle_ia_or_triggers(message, texto)
-
-        # --- DOWNLOADER DE VÍDEO (Separado para organização) ---
-        if texto.startswith('https://'):
-            await self.handle_video_download(message)
+        # --- LÓGICA DE RESPOSTAS RÁPIDAS (Dicionário) ---
+        for gatilho, resposta in RESPOSTAS_ESTATICAS.items():
+            if texto.startswith(gatilho):
+                async with message.channel.typing():
+                    await asyncio.sleep(1.5)
+                    final_msg = choice(resposta) if isinstance(resposta, list) else resposta
+                    await message.channel.send(final_msg)
+                return
 
     async def handle_ia_or_triggers(self, message, texto):
         # Em vez de 'async with', iniciamos o typing manualmente
@@ -198,7 +280,6 @@ class Interacao(commands.Cog):
         # Opcional: Se ainda persistir, o Discord simplesmente demora a atualizar o UI.
         return
 
-
     async def handle_video_download(self, message):
         video_link = message.content
         folder = "midia/downloads"
@@ -240,7 +321,7 @@ class Interacao(commands.Cog):
 
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as f:
-                    await canal.send(content=f"🎥 Enviado por: {message.author.mention}", file=discord.File(f))
+                    await canal.send(file=discord.File(f))
                 
                 os.remove(file_path) # Limpa o lixo do disco
 
