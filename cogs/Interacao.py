@@ -143,60 +143,61 @@ class Interacao(commands.Cog):
             await self.handle_video_download(message)
 
     async def handle_ia_or_triggers(self, message, texto):
-        # 1. Garantir que o typing() feche corretamente
-        async with message.channel.typing():
+        # Em vez de 'async with', iniciamos o typing manualmente
+        await message.channel.typing()
+        
+        try:
+            user_id = message.author.id
+            guild_id = message.guild.id
+            
+            # IDs do .env
             try:
-                # 2. Identificação (Convertendo para INT para a lógica funcionar)
-                user_id = message.author.id
-                guild_id = message.guild.id
-                
-                # Pegamos os IDs do .env e convertemos para int com segurança
-                try:
-                    criador_id = int(os.getenv('DONO'))
-                    guild_dono_id = int(os.getenv('GUILD_DONO'))
-                except (ValueError, TypeError):
-                    criador_id, guild_dono_id = 0, 0
+                criador_id = int(os.getenv('DONO', 0))
+                guild_dono_id = int(os.getenv('GUILD_DONO', 0))
+                criador_nome = self.bot.get_user(criador_id).display_name if criador_id else "Desconecido"
+            except (ValueError, TypeError):
+                criador_id, guild_dono_id = 0, 0
 
-                relacao = "seu criador" if user_id == criador_id else "um membro comum"
-                relacao_guilda = 'Seu Servidor Principal' if guild_id == guild_dono_id else 'um servidor comum'
+            relacao = f"seu criador:({criador_nome})" if user_id == criador_id else "um membro comum"
+            relacao_guilda = 'Seu Servidor Principal' if guild_id == guild_dono_id else 'um servidor comum'
 
-                # 3. Limpeza da Pergunta
-                pergunta_limpa = texto.replace(self.bn, "").replace(f'<@{self.bot.user.id}>', "").strip()
-                if not pergunta_limpa:
-                    pergunta_limpa = "me deu oi ou apenas me chamou"
+            pergunta_limpa = texto.replace(self.bn, "").replace(f'<@{self.bot.user.id}>', "").strip()
+            if not pergunta_limpa:
+                pergunta_limpa = "me deu oi ou apenas me chamou"
 
-                # 4. Histórico (Contexto)
-                mensagens = []
-                async for msg in message.channel.history(limit=15): # 15 mensagens é um bom equilíbrio
-                    mensagens.append(f"{msg.author.display_name}: {msg.content}")
-                
-                mensagens.reverse()
-                contexto_chat = "\n".join(mensagens)
+            mensagens = []
+            async for msg in message.channel.history(limit=15):
+                mensagens.append(f"{msg.author.display_name}: {msg.content}")
+            
+            mensagens.reverse()
+            contexto_chat = "\n".join(mensagens)
 
-                # 5. Montagem do Prompt Blindado
-                diretriz = os.getenv('BOT_PERSONALITY')
-                
-                prompt = (
-                    f"DIRETRIZES DE PERSONALIDADE: {diretriz}\n\n"
-                    f"SITUAÇÃO: Você está falando com {relacao} no {relacao_guilda}.\n"
-                    f"HISTÓRICO RECENTE:\n{contexto_chat}\n\n"
-                    f"A ÚLTIMA MENSAGEM DO USUÁRIO FOI: {pergunta_limpa}\n"
-                    f"RESPONDA AGORA (curto e direto):"
-                )
+            diretriz = os.getenv('BOT_PERSONALITY') or "Sarcástico e direto."
+            
+            prompt = (
+                f"DIRETRIZES: {diretriz}\n\n"
+                f"SITUAÇÃO: Falando com {relacao} no {relacao_guilda}.\n"
+                f"CONTEXTO:\n{contexto_chat}\n\n"
+                f"USUÁRIO: {pergunta_limpa}\n"
+                f"RESPOSTA:"
+            )
 
-                # 6. Geração com Timeout (Evita travar o 'digitando')
-                # O loop 'async with typing' fecha automaticamente quando sair deste bloco
-                response = model.generate_content(prompt)
-                
-                if response and response.text:
-                    await message.channel.send(response.text)
-                else:
-                    await message.channel.send("Fiquei sem palavras agora... tenta de novo.")
+            # 1. Geramos o conteúdo PRIMEIRO (isso leva tempo)
+            response = model.generate_content(prompt)
+            
+            # 2. Enviamos a mensagem (Isso deveria parar o typing automaticamente no Discord)
+            if response and response.text:
+                await message.channel.send(response.text)
+            else:
+                await message.channel.send("Fiquei sem palavras agora.")
 
-            except Exception as e:
-                print(f"❌ ERRO NO GEMINI: {e}")
-                # Resposta de fallback para não deixar o usuário no vácuo
-                await message.channel.send("Tô com preguiça de pensar, me pergunta mais tarde ou usa os comandos com /")
+        except Exception as e:
+            print(f"❌ ERRO NO GEMINI: {e}")
+            await message.channel.send("Tô com preguiça de pensar agora.")
+        
+        # Opcional: Se ainda persistir, o Discord simplesmente demora a atualizar o UI.
+        return
+
 
     async def handle_video_download(self, message):
         video_link = message.content

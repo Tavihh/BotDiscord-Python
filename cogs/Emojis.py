@@ -26,13 +26,17 @@ class Emoji(commands.Cog):
 
     def deve_reagir(self, gatilhos, texto):
         if any(g in texto for g in gatilhos):
-            return randint(1, 1) == 1 # Ajustei para 1 em 4 (25% de chance) para não poluir muito
+            return randint(1, 4) == 1 # Ajustei para 1 em 4 (25% de chance) para não poluir muito
         return False
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        # Filtros de segurança básicos
+        # Filtros Iniciais
         if message.author.bot or not message.guild:
+            return
+
+        sv = ServerConfig(self.bot, message.guild)
+        if message.guild.id in sv.servers_off() or message.author.id in sv.ignore_list():
             return
 
         # (Aqui você mantém as suas verificações de ServerConfig/Ignore List)
@@ -53,7 +57,7 @@ class Emoji(commands.Cog):
 
         # Reação Especial (Quando citam o nome dele)
         if BOT_NAME in texto:
-            if randint(1, 2) == 1: # 50% de chance de mandar o óculos escuros
+            if randint(1, 10) == 1: # 50% de chance de mandar o óculos escuros
                 await message.add_reaction('😎')
 
 async def setup(bot):
