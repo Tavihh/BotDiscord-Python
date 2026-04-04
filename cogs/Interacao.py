@@ -286,6 +286,9 @@ class Interacao(commands.Cog):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
+        if not video_link.startswith("https://www.youtube.com/"):
+            return
+
         ydl_opts = {
             'format': 'best[ext=mp4][filesize<25M]/best',
             'outtmpl': f'{folder}/%(title).50s.%(ext)s',
