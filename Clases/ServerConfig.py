@@ -1,63 +1,66 @@
 import sqlite3
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 BOT = os.getenv('BOT')
-#Coneção com banco de dados
+
+# Conexão com banco de dados
 mydb = sqlite3.connect(f"{BOT}_bot.db")
 mydb.row_factory = sqlite3.Row
 mycursor = mydb.cursor()
 
 class ServerConfig:
-        def __init__(self,bot,server):
-            self.bot = bot
-            self.server = server
-        def bot_off(self):
-            sql = f"insert into bot values ('0','none','{self.server.id}','{self.server.name}','off')"
-            mycursor.execute(sql)
-            mydb.commit()
-        def bot_on(self):
-            sql = f"delete from bot where server_id ='{self.server.id}' and status ='off'"
-            mycursor.execute(sql)
-            mydb.commit()
-        def servers_off(self):
-            sql = f"select server_name , server_id from bot where status = 'off' "
-            mycursor.execute(sql)
-            myresult = mycursor.fetchall()  
-            server_list = []
-            for x in myresult:
-                server_list.append(int(x[1]))
-            return server_list
-        def ignore_list(self):
-            sql = f"select id ,server_id from bot where status ='ignore' and server_id ='{self.server.id}'"
-            mycursor.execute(sql)
-            myresult = mycursor.fetchall()
-            adm_list = []
-            for x in myresult:
-                adm_list.append(int(x[0]))
-            return adm_list     
-        def add_ignore(self,user):
-            sql = f"insert into bot values ('{user.id}','{user.global_name}','{self.server.id}','{self.server.name}','ignore')"
-            mycursor.execute(sql)
-            mydb.commit()
-        def remove_ignore(self,user):
-            sql = f"delete from bot where id ='{user.id}' and server_id ='{self.server.id}' and status ='ignore'"
-            mycursor.execute(sql)
-            mydb.commit()
-        def adm_list(self):
-            sql = f"select id ,server_id from bot where status ='adm' and server_id ='{self.server.id}'"
-            mycursor.execute(sql)
-            myresult = mycursor.fetchall()
-            adm_list = []
-            for x in myresult:
-                adm_list.append(int(x[0]))
-            return adm_list 
-        def add_adm(self,user):
-            sql = f"insert into bot values ('{user.id}','{user.global_name}','{self.server.id}','{self.server.name}','adm')"
-            mycursor.execute(sql)
-            mydb.commit()
-        def remove_adm(self,user):
-            sql = f"delete from bot where id ='{user.id}' and server_id ='{self.server.id}' and status ='adm'"
-            mycursor.execute(sql)
-            mydb.commit()
-    
+    def __init__(self, bot, server):
+        self.bot = bot
+        self.server = server # Agora recebe o objeto Guild completo
+
+    def _executar(self, sql, params=()):
+        """Método auxiliar para evitar repetição de código"""
+        mycursor.execute(sql, params)
+        mydb.commit()
+
+    def bot_off(self):
+        sql = "INSERT INTO bot VALUES (?, ?, ?, ?, ?)"
+        params = ('0', 'none', str(self.server.id), self.server.name, 'off')
+        self._executar(sql, params)
+
+    def bot_on(self):
+        sql = "DELETE FROM bot WHERE server_id = ? AND status = 'off'"
+        self._executar(sql, (str(self.server.id),))
+
+    def servers_off(self):
+        sql = "SELECT server_id FROM bot WHERE status = 'off'"
+        mycursor.execute(sql)
+        # Usando o nome da coluna para ser mais prático
+        return [int(row['server_id']) for row in mycursor.fetchall()]
+
+    def ignore_list(self):
+        sql = "SELECT id FROM bot WHERE status = 'ignore' AND server_id = ?"
+        mycursor.execute(sql, (str(self.server.id),))
+        return [int(row['id']) for row in mycursor.fetchall()]
+
+    def add_ignore(self, user):
+        nome = user.global_name or user.name
+        sql = "INSERT INTO bot VALUES (?, ?, ?, ?, ?)"
+        params = (str(user.id), nome, str(self.server.id), self.server.name, 'ignore')
+        self._executar(sql, params)
+
+    def remove_ignore(self, user):
+        sql = "DELETE FROM bot WHERE id = ? AND server_id = ? AND status = 'ignore'"
+        self._executar(sql, (str(user.id), str(self.server.id)))
+
+    def adm_list(self):
+        sql = "SELECT id FROM bot WHERE status = 'adm' AND server_id = ?"
+        mycursor.execute(sql, (str(self.server.id),))
+        return [int(row['id']) for row in mycursor.fetchall()]
+
+    def add_adm(self, user):
+        nome = user.global_name or user.name
+        sql = "INSERT INTO bot VALUES (?, ?, ?, ?, ?)"
+        params = (str(user.id), nome, str(self.server.id), self.server.name, 'adm')
+        self._executar(sql, params)
+
+    def remove_adm(self, user):
+        sql = "DELETE FROM bot WHERE id = ? AND server_id = ? AND status = 'adm'"
+        self._executar(sql, (str(user.id), str(self.server.id)))

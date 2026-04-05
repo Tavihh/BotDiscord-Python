@@ -39,6 +39,7 @@ class Invite(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         if member.bot: return
+        if member.guild.id == int(os.getenv('GUILD_DONO')): return
         
         inv_db = InviteConfig(self.bot, member.guild)
         try:

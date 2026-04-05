@@ -92,7 +92,7 @@ class Commands(commands.Cog):
     @app_commands.describe(quem = 'Contra quem você quer lutar?')
     async def pvp(self, interaction: discord.Interaction, quem:discord.Member):
         #Verificando se o bot ta on
-        sv = ServerConfig(self.bot,interaction.guild_id)
+        sv = ServerConfig(self.bot,interaction.guild)
         if interaction.guild.id in sv.servers_off():
             await interaction.response.send_message('To Off',delete_after=20)
             return
@@ -146,7 +146,7 @@ class Commands(commands.Cog):
     @app_commands.describe(quem = 'Quem você quer beijar??')
     async def beijar(self, interaction: discord.Interaction, quem:discord.Member):
         #Verificando se o bot ta on
-        sv = ServerConfig(self.bot,interaction.guild_id)
+        sv = ServerConfig(self.bot,interaction.guild)
         if interaction.guild.id in sv.servers_off():
             await interaction.response.send_message('To Off',delete_after=20)
             return
@@ -179,7 +179,7 @@ class Commands(commands.Cog):
     @app_commands.describe(quem = 'O Avatar de quem que você quer pegar?')
     async def avatar(self, interaction:discord.Interaction,quem:discord.Member):
         #Verificando se o bot ta on
-        sv = ServerConfig(self.bot,interaction.guild_id)
+        sv = ServerConfig(self.bot,interaction.guild)
         if interaction.guild.id in sv.servers_off():
             await interaction.response.send_message('To Off',delete_after=20)
             return
@@ -198,7 +198,7 @@ class Commands(commands.Cog):
     @app_commands.describe(link='Cole o Link de um Video do Youtube')
     async def youtube_video(self, interaction: discord.Interaction, link: str):
         # 1. Verificando configurações do servidor
-        sv = ServerConfig(self.bot,interaction.guild_id)
+        sv = ServerConfig(self.bot,interaction.guild)
         if interaction.guild.id in sv.servers_off():
             await interaction.response.send_message('To Off', delete_after=20)
             return
@@ -256,7 +256,7 @@ class Commands(commands.Cog):
     async def gay(self, interaction:discord.Interaction, quem:discord.Member):
     
         #Verificando se o bot ta on
-        sv = ServerConfig(self.bot,interaction.guild_id)
+        sv = ServerConfig(self.bot,interaction.guild)
         if interaction.guild.id in sv.servers_off():
             await interaction.response.send_message('To Off',delete_after=20)
             return

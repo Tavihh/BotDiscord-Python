@@ -7,6 +7,7 @@ import os
 from yt_dlp import YoutubeDL
 from Clases.ServerConfig import ServerConfig
 
+
 # Configura a API (Pegue sua chave em: https://aistudio.google.com/)
 genai.configure(api_key=os.getenv("GEMINI_KEY"))
 model = genai.GenerativeModel(os.getenv("GEMINI_MODEL")) # Versão rápida e leve
