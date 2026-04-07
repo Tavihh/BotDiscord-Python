@@ -34,7 +34,7 @@ class Interacao(commands.Cog):
         # --- CONFIGURAÇÃO GROQ (Substituindo IA Local) ---
         print("⚡ Conectando ao motor GroqCloud (Llama 3.1 70B)...")
         self.client_groq = Groq(api_key=os.getenv('GROQ_API_KEY'))
-        self.modelo_groq = "llama-3.1-8b-instant"
+        self.modelo_groq = "llama-3.3-70b-specdec"
         print("✅ Conectado ao GroqCloud!")
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -142,11 +142,12 @@ class Interacao(commands.Cog):
 
                 # Seu Prompt original preservado
                 prompt = (
+                    f"SISTEMA: Você é o personagem descrito abaixo. Responda apenas como ele, sem narrações entre parênteses e sem explicar suas ações.\n"
                     f"DIRETRIZES: {diretriz}\n"
-                    f"CONTEXTO:\n{contexto_texto}\n"
-                    f"SITUAÇÃO: Falando com {relacao} no {server}.\n"
+                    f"CONTEXTO DO CHAT:\n{contexto_texto}\n"
+                    f"SITUAÇÃO: Você está falando com o {relacao}.\n"
                     f"USUÁRIO: {texto}\n"
-                    f"RESPOSTA:"
+                    f"RESPOSTA CURTA:"
                 )
 
                 # --- CHAMADA DA API GROQ (Substituindo o Executor Local) ---

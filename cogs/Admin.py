@@ -16,7 +16,7 @@ class Admin(commands.Cog):
     def tem_permissao(self, interaction: discord.Interaction, sv):
         return (interaction.user.guild_permissions.administrator or 
                 interaction.user.id in sv.adm_list() or 
-                interaction.user.id == os.getenv('DONO'))
+                interaction.user.id == int(os.getenv('DONO', 0)))
 
     @app_commands.command(name='clear', description='Limpa mensagens do Chat')
     @app_commands.describe(quantidade='Quantas mensagens eu devo apagar?')
