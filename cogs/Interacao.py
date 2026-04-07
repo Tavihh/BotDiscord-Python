@@ -41,7 +41,6 @@ class Interacao(commands.Cog):
         self.client_groq = Groq(api_key=os.getenv('GROQ_API_KEY'))
         self.modelo_groq = "llama-3.1-8b-instant"
         print("✅ Conectado ao GroqCloud!")
-    @commands.Cog.listener()
 
     # --- COMANDO PARA MUDAR (Muda a Alternativa) ---
     @app_commands.command(name='set-personalidade', description='Muda a personalidade da IA (Dono apenas)')
@@ -64,7 +63,8 @@ class Interacao(commands.Cog):
             
         self.diretriz['alternativa'] = None
         await interaction.response.send_message("🔄 **Zeca Urubu de volta ao posto!** Diretriz padrão reativada.")
-
+    
+    @commands.Cog.listener()
     async def on_message(self, message):
         # 1. Filtros Iniciais
         if message.author.bot or not message.guild:
