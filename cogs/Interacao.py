@@ -39,7 +39,7 @@ class Interacao(commands.Cog):
         # --- CONFIGURAÇÃO GROQ (Substituindo IA Local) ---
         print("⚡ Conectando ao motor GroqCloud (Llama 3.1 70B)...")
         self.client_groq = Groq(api_key=os.getenv('GROQ_API_KEY'))
-        self.modelo_groq = "llama-3.3-70b-specdec"
+        self.modelo_groq = "llama-3.1-8b-instant"
         print("✅ Conectado ao GroqCloud!")
     @commands.Cog.listener()
 
