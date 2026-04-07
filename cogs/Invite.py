@@ -124,4 +124,10 @@ class RegistroView(discord.ui.View):
             await interaction.followup.send("Erro ao criar link. Verifique minhas permissões.", ephemeral=True)
 
 async def setup(bot):
-    await bot.add_cog(Invite(bot))
+    # Adiciona a Cog primeiro
+    cog = Invite(bot)
+    await bot.add_cog(cog)
+    
+    # Registra a View na lista de views persistentes do bot
+    bot.add_view(RegistroView(bot))
+    print("✅ Sistema de Convites: View Persistente Registrada.")
