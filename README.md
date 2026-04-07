@@ -36,6 +36,7 @@ O **BotDiscord-Python** é um projeto de bot para Discord moderno, modular e alt
     # Windows: .venv\Scripts\activate
     # Linux/Mac: source .venv/bin/activate
 
+
     pip install -r requirements.txt
     ```
 
@@ -43,11 +44,14 @@ O **BotDiscord-Python** é um projeto de bot para Discord moderno, modular e alt
     Crie um arquivo `.env` na raiz do projeto e preencha as chaves:
     ```env
     BOT_TOKEN=SEU_TOKEN_DISCORD
-    GEMINI_KEY=SUA_CHAVE_GOOGLE_AI
     BOT_NAME=steve
+    LINK_SERVER=LINK_DO_SEU_SERVER
+    CARGO_MEMBRO_ID=ID_DO_CARGO_DE_MEMBRO
+    CANAL_BOAS_VINDAS=ID_DO_CANAL_DE_BOAS_VINDAS
     DONO=SEU_ID_USUARIO
     GUILD_DONO=ID_DO_SERVIDOR_PRINCIPAL
     CANAL_DOWNLOADS=ID_DO_CANAL_DE_VIDEOS
+    GROQ_API_KEY=SUA_GROQ_KEY
     BOT_PERSONALITY="Você é o Steve, um bot sarcástico, pragmático e leal ao seu criador."
     ```
 

@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import google.generativeai as genai
 from random import randint, choice
 from yt_dlp import YoutubeDL
 from Clases.ServerConfig import ServerConfig
@@ -24,22 +23,6 @@ class Commands(commands.Cog):
     async def hello(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'Hey {interaction.user.mention}, Estou Funcionando!',delete_after=15)
         
-    @app_commands.command(name="pergunta", description="Pergunta algo para a sabedoria do Corvo")
-    async def pergunta(self, interaction: discord.Interaction, msg: str):
-        await interaction.response.defer()
-        client = genai.Client(api_key=os.getenv("GEMINI_KEY"))
-        model = os.getenv("GEMINI_MODEL")
-
-        try:
-            response = client.models.generate_content(
-            model=model,
-            contents=msg
-        )
-            await interaction.followup.send(response.text)
-        except Exception as e:
-            print(f"❌ ERRO NO GEMINI: {e}") # Isso vai aparecer no seu console
-            await interaction.followup.send("Minha cabeça deu tilt agora. Tenta depois.")
-
     @app_commands.command(name='fale', description='Falarei oque você quiser no chat')
     @app_commands.describe(oque_dizer = 'Oque eu deveria dizer?')
     async def dig(self, interaction: discord.Interaction,oque_dizer:str):
