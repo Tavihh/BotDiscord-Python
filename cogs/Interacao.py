@@ -33,7 +33,7 @@ class Interacao(commands.Cog):
         self.conversa_ativa = {}
         self.diretriz = {
             'padrao': os.getenv('BOT_PERSONALITY', "Sarcástico e direto."), 
-            'alternativa': None
+            'alternativas_por_servidor': {} # Mudamos de uma string única para um dicionário
         }
 
         # --- CONFIGURAÇÃO GROQ (Substituindo IA Local) ---
@@ -47,11 +47,12 @@ class Interacao(commands.Cog):
     async def set_personalidade(self, interaction: discord.Interaction, nova_diretriz: str):
         dono_id = int(os.getenv('DONO', 0))
         if interaction.user.id != dono_id:
-            await interaction.response.send_message("❌ **Só o Boss mexe no meu bico.**", ephemeral=True)
+            await interaction.response.send_message("❌ **Só o Boss mexe no meu cerebro.**", ephemeral=True)
             return
         
-        self.diretriz['alternativa'] = nova_diretriz
-        await interaction.response.send_message(f"✅ **Personalidade alterada!** Agora eu sou: `{nova_diretriz[:50]}...`")
+        # Salva a diretriz usando o ID do servidor atual
+        self.diretriz['alternativas_por_servidor'][interaction.guild_id] = nova_diretriz
+        await interaction.response.send_message(f"✅ Personalidade alterada **neste servidor**!")
 
     # --- COMANDO PARA VOLTAR (Limpa a Alternativa) ---
     @app_commands.command(name='reset-personalidade', description='Volta para a personalidade original')
@@ -61,8 +62,9 @@ class Interacao(commands.Cog):
             await interaction.response.send_message("❌ **Acesso Negado.**", ephemeral=True)
             return
             
-        self.diretriz['alternativa'] = None
-        await interaction.response.send_message("🔄 **Zeca Urubu de volta ao posto!** Diretriz padrão reativada.")
+        # Se não existir, ele simplesmente não faz nada e não dá erro
+        self.diretriz['alternativas_por_servidor'].pop(interaction.guild_id, None)
+        await interaction.response.send_message("🔄 Diretriz padrão reativada neste servidor.", ephemeral=True)
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -166,8 +168,9 @@ class Interacao(commands.Cog):
                     if not m.author.bot
                 ])
 
-                diretriz_ativa = self.diretriz['alternativa'] or self.diretriz['padrao']
-                
+                # Tenta pegar a alternativa do servidor atual, se não tiver, usa a padrão
+                guild_id = message.guild.id
+                diretriz_ativa = self.diretriz['alternativas_por_servidor'].get(guild_id) or self.diretriz['padrao']
 
                 # Seu Prompt original preservado
                 prompt = (
