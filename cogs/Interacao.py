@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 from random import randint, choice
 import asyncio
 import os
@@ -30,6 +31,10 @@ class Interacao(commands.Cog):
         self.bot = bot
         self.bn = os.getenv('BOT').lower()
         self.conversa_ativa = {}
+        self.diretriz = {
+            'padrao': os.getenv('BOT_PERSONALITY', "Sarcástico e direto."), 
+            'alternativa': None
+        }
 
         # --- CONFIGURAÇÃO GROQ (Substituindo IA Local) ---
         print("⚡ Conectando ao motor GroqCloud (Llama 3.1 70B)...")
@@ -37,6 +42,29 @@ class Interacao(commands.Cog):
         self.modelo_groq = "llama-3.3-70b-specdec"
         print("✅ Conectado ao GroqCloud!")
     @commands.Cog.listener()
+
+    # --- COMANDO PARA MUDAR (Muda a Alternativa) ---
+    @app_commands.command(name='set-personalidade', description='Muda a personalidade da IA (Dono apenas)')
+    async def set_personalidade(self, interaction: discord.Interaction, nova_diretriz: str):
+        dono_id = int(os.getenv('DONO', 0))
+        if interaction.user.id != dono_id:
+            await interaction.response.send_message("❌ **Só o Boss mexe no meu bico.**", ephemeral=True)
+            return
+        
+        self.diretriz['alternativa'] = nova_diretriz
+        await interaction.response.send_message(f"✅ **Personalidade alterada!** Agora eu sou: `{nova_diretriz[:50]}...`")
+
+    # --- COMANDO PARA VOLTAR (Limpa a Alternativa) ---
+    @app_commands.command(name='reset-personalidade', description='Volta para a personalidade original')
+    async def reset_personalidade(self, interaction: discord.Interaction):
+        dono_id = int(os.getenv('DONO', 0))
+        if interaction.user.id != dono_id:
+            await interaction.response.send_message("❌ **Acesso Negado.**", ephemeral=True)
+            return
+            
+        self.diretriz['alternativa'] = None
+        await interaction.response.send_message("🔄 **Zeca Urubu de volta ao posto!** Diretriz padrão reativada.")
+
     async def on_message(self, message):
         # 1. Filtros Iniciais
         if message.author.bot or not message.guild:
@@ -137,15 +165,16 @@ class Interacao(commands.Cog):
                     for m in reversed(contexto) 
                     if not m.author.bot
                 ])
+
+                diretriz_ativa = self.diretriz['alternativa'] or self.diretriz['padrao']
                 
-                diretriz = os.getenv('BOT_PERSONALITY', "Sarcástico e direto.")
 
                 # Seu Prompt original preservado
                 prompt = (
                     f"SISTEMA: Você é o personagem descrito abaixo. Responda apenas como ele, sem narrações entre parênteses e sem explicar suas ações.\n"
-                    f"DIRETRIZES: {diretriz}\n"
+                    f"DIRETRIZES: {diretriz_ativa}\n"
                     f"CONTEXTO DO CHAT:\n{contexto_texto}\n"
-                    f"SITUAÇÃO: Você está falando com o {relacao}.\n"
+                    f"SITUAÇÃO: Você está falando com o {relacao} em {server}.\n"
                     f"USUÁRIO: {texto}\n"
                     f"RESPOSTA CURTA:"
                 )
